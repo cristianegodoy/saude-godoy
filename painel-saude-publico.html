@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saúde da Família · Godoy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --patient-color: #D9ADA2;
+            --patient-color-dark: #7A4A45;
+            --color-bg: #FAF7F3;
+            --color-bg-2: #F0EFE6;
+            --color-border: #EAEAEA;
+            --color-text: #3A3530;
+            --color-text-secondary: #A9A49F;
+            --color-green: #4a7c59;
+            --color-green-bg: #e4efe8;
+            --color-orange: #8B5E3C;
+            --color-orange-bg: #f5e8dc;
+            --color-red: #9B4A4A;
+            --color-red-bg: #f5e0e0;
+            --shadow-sm: 0 1px 6px rgba(58,53,48,0.08);
+            --radius: 14px;
+            --radius-sm: 9px;
+            --font: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            --font-title: 'Lora', Georgia, serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font); background: var(--color-bg); color: var(--color-text); min-height: 100vh; }
+        #alertsBar { background:linear-gradient(90deg,#fff8e1,#fffde7); border-bottom:2px solid #ffd54f; padding:10px 24px; display:none; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+        #alertsBar.visible { display:flex; }
+        .ab-label { font-weight:700; font-size:.8rem; color:#b45309; white-space:nowrap; padding-top:3px; text-transform:uppercase; letter-spacing:.5px; }
+        .ab-chips { display:flex; flex-wrap:wrap; gap:6px; }
+        .ab-chip { display:inline-flex; align-items:center; gap:4px; background:#fff; border:1px solid #fcd34d; border-radius:20px; padding:3px 12px; font-size:.78rem; color:#374151; }
+        .ab-chip.urgent { background:#fef2f2; border-color:#fca5a5; color:#7f1d1d; }
+        .header { background:#FAF7F3; border-bottom:1px solid var(--color-border); padding:14px 28px; display:flex; align-items:center; gap:14px; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:100; }
+        .header-logo { font-size:1.5rem; }
+        .header-title { font-size:1.15rem; font-weight:600; letter-spacing:-.2px; font-family:var(--font-title); font-style:italic; color:var(--color-text); }
+        .header-subtitle { font-size:.72rem; color:var(--color-text-secondary); font-weight:300; letter-spacing:.4px; text-transform:uppercase; }
+        .header-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+        .header-date { font-size:.8rem; color:var(--color-text-secondary); background:var(--color-bg); padding:5px 12px; border-radius:20px; border:1px solid var(--color-border); }
+        .readonly-badge { font-size:.72rem; font-weight:500; background:#F0EFE6; color:#656B5C; border:1px solid #C7C3B0; padding:4px 14px; border-radius:20px; letter-spacing:.3px; }
+        .updated-stamp { text-align:center; font-size:.72rem; color:var(--color-text-secondary); padding:7px; background:#F0EFE6; border-bottom:1px solid var(--color-border); font-weight:300; letter-spacing:.2px; }
+        .main { max-width:1280px; margin:0 auto; padding:24px 28px; }
+        .patient-selector { background:#FAF7F3; border-radius:var(--radius); padding:14px 18px; margin-bottom:18px; box-shadow:var(--shadow-sm); border:1px solid var(--color-border); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        .ps-label { font-size:.68rem; font-weight:500; text-transform:uppercase; letter-spacing:1.2px; color:var(--color-text-secondary); margin-right:4px; }
+        .patient-btn { display:flex; align-items:center; gap:10px; padding:9px 20px 9px 10px; border:2px solid var(--color-border); border-radius:40px; background:#fafafa; cursor:pointer; transition:all .2s; font-family:var(--font); font-size:.9rem; font-weight:500; color:var(--color-text-secondary); }
+        .patient-btn:hover { border-color:var(--btn-color); background:var(--btn-color-light); color:var(--btn-text-dark); transform:translateY(-1px); }
+        .patient-btn.active { border-color:var(--btn-color); background:var(--btn-color); color:var(--btn-text-dark); font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+        .patient-avatar { width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.7); display:flex; align-items:center; justify-content:center; font-size:1.15rem; border:1px solid rgba(0,0,0,.08); }
+        .patient-btn.active .patient-avatar { background:rgba(255,255,255,.5); }
+        .nav-tabs { display:flex; gap:4px; background:#FAF7F3; border-radius:var(--radius); padding:5px; margin-bottom:20px; box-shadow:var(--shadow-sm); border:1px solid var(--color-border); }
+        .nav-tab { flex:1; padding:9px 12px; border:none; border-radius:var(--radius-sm); background:none; cursor:pointer; font-family:var(--font); font-size:.8rem; font-weight:500; color:var(--color-text-secondary); transition:all .18s; display:flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; letter-spacing:.2px; }
+        .nav-tab:hover { background:var(--color-bg-2); color:var(--color-text); }
+        .nav-tab.active { background:var(--patient-color); color:var(--patient-color-dark); font-weight:600; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+        .section-title { font-size:1.05rem; font-weight:600; font-family:var(--font-title); color:var(--color-text); }
+        .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:12px; font-size:.75rem; font-weight:700; }
+        .badge-green  { background:var(--color-green-bg);  color:var(--color-green);  }
+        .badge-yellow { background:#fef9c3; color:#92400e; }
+        .badge-orange { background:var(--color-orange-bg); color:var(--color-orange); }
+        .badge-red    { background:var(--color-red-bg);    color:var(--color-red);    }
+        .med-groups { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; }
+        .med-group { background:#FAF7F3; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--color-border); overflow:hidden; }
+        .med-group-header { background:var(--patient-color); padding:11px 16px; display:flex; align-items:center; justify-content:space-between; }
+        .med-group-title { font-weight:600; font-size:.82rem; color:var(--patient-color-dark); display:flex; align-items:center; gap:7px; letter-spacing:.3px; text-transform:uppercase; }
+        .med-group-count { font-size:.72rem; color:var(--patient-color-dark); opacity:.75; font-weight:500; }
+        .med-group-body { padding:12px; display:flex; flex-direction:column; gap:10px; min-height:60px; }
+        .med-card { background:#fff; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:12px 14px; }
+        .med-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+        .med-name { font-weight:600; font-size:.88rem; color:var(--color-text); }
+        .med-dose { font-size:.76rem; color:var(--color-text-secondary); margin-top:2px; font-weight:300; }
+        .med-obs  { font-size:.74rem; color:#8B5E3C; font-style:italic; margin-top:5px; background:#f5e8dc; padding:3px 8px; border-radius:5px; border-left:2px solid #C5B5AE; }
+        .no-items { padding:16px 12px; text-align:center; color:var(--color-text-secondary); font-size:.8rem; font-style:italic; font-weight:300; }
+        .table-wrap { background:#FAF7F3; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--color-border); overflow:hidden; overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; min-width:550px; }
+        thead th { background:var(--patient-color); color:var(--patient-color-dark); padding:11px 16px; text-align:left; font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.8px; white-space:nowrap; }
+        tbody td { padding:11px 16px; border-bottom:1px solid var(--color-border); font-size:.84rem; vertical-align:middle; font-weight:400; }
+        tbody tr:last-child td { border-bottom:none; }
+        tbody tr:hover td { background:#F0EFE6; }
+        .td-notes { max-width:220px; font-size:.78rem; color:var(--color-text-secondary); font-weight:300; }
+        .empty-row td { text-align:center; padding:40px 20px; color:var(--color-text-secondary); }
+        .empty-icon { font-size:2rem; display:block; margin-bottom:8px; }
+        .alerts-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+        .alert-card { background:#FAF7F3; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--color-border); padding:16px 18px; border-left:4px solid #C5B5AE; }
+        .alert-card.urgent  { border-left-color:#9B4A4A; }
+        .alert-card.warning { border-left-color:#8B5E3C; }
+        .alert-patient-tag { font-size:.68rem; font-weight:600; text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
+        .alert-msg    { font-size:.88rem; font-weight:600; font-family:var(--font-title); }
+        .alert-detail { font-size:.78rem; color:var(--color-text-secondary); margin-top:5px; font-weight:300; }
+        @media (max-width:768px) {
+            .main { padding:16px; } .header { padding:12px 16px; }
+            .header-date { display:none; } .nav-tab .tab-label { display:none; }
+            .med-groups { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+<div id="alertsBar"><span class="ab-label">🔔 Alertas</span><div class="ab-chips" id="alertsChips"></div></div>
+<header class="header">
+    <span class="header-logo">🏥</span>
+    <div><div class="header-title">Saúde da Família · Godoy</div><div class="header-subtitle">Consultas · Medicamentos · Exames</div></div>
+    <div class="header-right">
+        <span class="readonly-badge">👁️ Somente leitura</span>
+        <div class="header-date" id="headerDate"></div>
+    </div>
+</header>
+<div class="updated-stamp" id="updatedStamp"></div>
+<div class="main">
+    <div class="patient-selector">
+        <span class="ps-label">Paciente</span>
+        <button class="patient-btn" id="pbtn-cristiane" onclick="selectPatient('cristiane')" style="--btn-color:#D9ADA2;--btn-color-light:#F2E4E1;--btn-text-dark:#7A4A45;">
+            <div class="patient-avatar">👩</div> Cristiane
+        </button>
+        <button class="patient-btn" id="pbtn-aparecida" onclick="selectPatient('aparecida')" style="--btn-color:#9B7D7B;--btn-color-light:#DDD0CF;--btn-text-dark:#4A3533;">
+            <div class="patient-avatar">👩‍🦳</div> Aparecida (mãe)
+        </button>
+        <button class="patient-btn" id="pbtn-darci" onclick="selectPatient('darci')" style="--btn-color:#C7C3B0;--btn-color-light:#E8E6DC;--btn-text-dark:#5A5647;">
+            <div class="patient-avatar">👨‍🦳</div> Darci (pai)
+        </button>
+    </div>
+    <div class="nav-tabs">
+        <button class="nav-tab active" id="tab-medicamentos" onclick="showSection('medicamentos')">💊 <span class="tab-label">Medicamentos</span></button>
+        <button class="nav-tab" id="tab-consultas"   onclick="showSection('consultas')">🩺 <span class="tab-label">Consultas</span></button>
+        <button class="nav-tab" id="tab-exames"      onclick="showSection('exames')">🧪 <span class="tab-label">Exames</span></button>
+        <button class="nav-tab" id="tab-pendencias"  onclick="showSection('pendencias')">⚠️ <span class="tab-label">Pendências</span></button>
+    </div>
+    <div id="section-medicamentos" class="section active">
+        <div class="section-header"><span class="section-title">💊 Medicamentos &amp; Suplementos</span></div>
+        <div class="med-groups" id="medGroups"></div>
+    </div>
+    <div id="section-consultas" class="section">
+        <div class="section-header"><span class="section-title">🩺 Consultas Médicas</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Horário</th><th>Especialidade</th><th>Médico(a)</th><th>Status</th><th>Notas</th></tr></thead><tbody id="consultasBody"></tbody></table></div>
+    </div>
+    <div id="section-exames" class="section">
+        <div class="section-header"><span class="section-title">🧪 Exames</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Exame</th><th>Solicitado em</th><th>Realizado em</th><th>Status</th><th>Médico Solicitante</th><th>Resultado</th></tr></thead><tbody id="examesBody"></tbody></table></div>
+    </div>
+    <div id="section-pendencias" class="section">
+        <div class="section-header">
+            <span class="section-title">⚠️ Pendências &amp; Alertas</span>
+            <span style="font-size:.8rem;color:var(--color-text-secondary);">Todos os pacientes</span>
+        </div>
+        <div class="alerts-grid" id="alertsGrid"></div>
+    </div>
+</div>
+<script>
+var ULTIMA_ATUALIZACAO = '12/05/2026 — medicamentos de Aparecida atualizados';
+var DATA = {
+    cristiane: {
+        medications: [
+            {name:'Euthirox',        dose:'75mg Seg/Qua/Sex · 50mg Ter/Qui/Sáb/Dom', time:'manhajejum', status:'ativo',   observation:''},
+            {name:'Sertralina',       dose:'50mg diário',                              time:'manhajejum', status:'ativo',   observation:''},
+            {name:'Jardiance',        dose:'mg a confirmar',                           time:'manhajejum', status:'pausado', observation:'Consulta jun/26 — confirmar dose'},
+            {name:'Picolinato Boost', dose:'1 cápsula',                                time:'manhacafe',  status:'ativo',   observation:''},
+            {name:'Cardio Ômega 3',   dose:'1–2 cápsulas',                             time:'almoco',     status:'ativo',   observation:''},
+            {name:'N.A.C.',           dose:'1 cápsula',                                time:'almoco',     status:'ativo',   observation:''},
+            {name:'Donaren',          dose:'50mg',                                     time:'noite',      status:'ativo',   observation:''},
+            {name:'4Mag Magnésios',   dose:'1–2 cápsulas',                             time:'noite',      status:'ativo',   observation:''},
+            {name:'Aripiprazol',      dose:'½ de 50mg',                                time:'noite',      status:'pausado', observation:'Alerta do gastro — aguardando orientação'}
+        ],
+        appointments: [
+            {date:'2026-05-13', time:'15:40', specialty:'Cardiologista',    doctor:'Dr. Matheus', location:'Pro Coração', status:'agendada',  notes:''},
+            {date:'2026-06-13', time:'10:00', specialty:'Endocrinologista', doctor:'Dra. Eliana', location:'',            status:'agendada',  notes:''},
+            {date:'2026-06-01', time:'',      specialty:'Odontologista',    doctor:'Dr. Duílio',  location:'',            status:'a_agendar', notes:'Limpeza dental — aguardando confirmação de data'},
+            {date:'2026-11-01', time:'',      specialty:'Odontologista',    doctor:'Dr. Duílio',  location:'',            status:'a_agendar', notes:'Limpeza dental — aguardando confirmação de data'}
+        ],
+        exams: []
+    },
+    aparecida: {
+        medications: [
+            {name:'Forxiga',      dose:'10mg',  time:'manhajejum', status:'ativo',    observation:'Diabetes'},
+            {name:'Losartana',    dose:'50mg',  time:'manhajejum', status:'ativo',    observation:'Pressão arterial'},
+            {name:'Clorotiazida', dose:'25mg',  time:'manhajejum', status:'ativo',    observation:'Pressão arterial'},
+            {name:'Losartana',    dose:'50mg',  time:'noite',      status:'ativo',    observation:'Pressão arterial'},
+            {name:'Tireoide',     dose:'—',     time:'manhajejum', status:'verificar', observation:'Verificar condições da tireoide com Dra. Eliana (endocrinologista)'}
+        ],
+        appointments: [
+            {date:'2026-06-13', time:'10:30', specialty:'Endocrinologista', doctor:'Dra. Eliana', location:'', status:'agendada', notes:''}
+        ],
+        exams: []
+    },
+    darci: {medications:[], appointments:[], exams:[]}
+};
+var PATIENTS_META = {
+    cristiane: {name:'Cristiane',       color:'#D9ADA2', colorDark:'#7A4A45', emoji:'👩'},
+    aparecida: {name:'Aparecida (mãe)', color:'#9B7D7B', colorDark:'#4A3533', emoji:'👩‍🦳'},
+    darci:     {name:'Darci (pai)',     color:'#C7C3B0', colorDark:'#5A5647', emoji:'👨‍🦳'}
+};
+var TIME_SLOTS = [
+    {key:'manhajejum', label:'Manhã Jejum',    icon:'🌅'},
+    {key:'manhacafe',  label:'Manhã Pós-Café', icon:'☕'},
+    {key:'almoco',     label:'Almoço',         icon:'🍽️'},
+    {key:'noite',      label:'Noite',          icon:'🌙'}
+];
+var STATUS_LABEL = {
+    ativo:'Ativo', pausado:'Pausado', verificar:'Verificar',
+    agendada:'Agendada', a_agendar:'A Agendar', realizada:'Realizada', cancelada:'Cancelada',
+    pendente:'Pendente', realizado:'Realizado', vencido:'Vencido'
+};
+function statusClass(s) {
+    if (['ativo','agendada','realizado','realizada'].indexOf(s)>=0) return 'badge-green';
+    if (s==='a_agendar') return 'badge-yellow';
+    if (['pausado','pendente'].indexOf(s)>=0) return 'badge-orange';
+    return 'badge-red';
+}
+var currentPatient='cristiane', currentSection='medicamentos';
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(d) { if (!d) return '—'; var p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function fmtTime(t) { return t||'—'; }
+function selectPatient(pid) {
+    currentPatient=pid;
+    var m=PATIENTS_META[pid];
+    document.documentElement.style.setProperty('--patient-color',m.color);
+    document.documentElement.style.setProperty('--patient-color-dark',m.colorDark);
+    document.querySelectorAll('.patient-btn').forEach(function(b){b.classList.remove('active');});
+    document.getElementById('pbtn-'+pid).classList.add('active');
+    renderSection();
+}
+function showSection(sid) {
+    currentSection=sid;
+    document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+    document.getElementById('section-'+sid).classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+    document.getElementById('tab-'+sid).classList.add('active');
+    renderSection();
+}
+function renderSection() {
+    if      (currentSection==='medicamentos') renderMeds();
+    else if (currentSection==='consultas')    renderConsultas();
+    else if (currentSection==='exames')       renderExames();
+    else if (currentSection==='pendencias')   renderPendencias();
+    renderAlertsBar();
+}
+function renderMeds() {
+    var meds=DATA[currentPatient].medications||[];
+    var container=document.getElementById('medGroups');
+    container.innerHTML='';
+    TIME_SLOTS.forEach(function(slot) {
+        var sm=meds.filter(function(m){return m.time===slot.key;});
+        var body=sm.length===0?'<div class="no-items">Nenhum medicamento neste horário</div>':sm.map(function(med){
+            return '<div class="med-card"><div class="med-card-top"><div style="flex:1;min-width:0;">'
+                +'<div class="med-name">'+esc(med.name)+'</div>'
+                +'<div class="med-dose">'+esc(med.dose)+'</div>'
+                +(med.observation?'<div class="med-obs">⚠️ '+esc(med.observation)+'</div>':'')
+                +'</div><span class="badge '+statusClass(med.status)+'">'+(STATUS_LABEL[med.status]||med.status)+'</span>'
+                +'</div></div>';
+        }).join('');
+        var div=document.createElement('div');
+        div.className='med-group';
+        div.innerHTML='<div class="med-group-header"><span class="med-group-title">'+slot.icon+' '+slot.label+'</span>'
+            +'<span class="med-group-count">'+sm.length+' item'+(sm.length!==1?'s':'')+'</span></div>'
+            +'<div class="med-group-body">'+body+'</div>';
+        container.appendChild(div);
+    });
+}
+function renderConsultas() {
+    var appts=DATA[currentPatient].appointments||[];
+    var tbody=document.getElementById('consultasBody');
+    if (!appts.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">📅</span>Nenhuma consulta cadastrada</td></tr>';return;}
+    var sorted=appts.slice().sort(function(a,b){return a.date>b.date?1:-1;});
+    tbody.innerHTML=sorted.map(function(a){
+        return '<tr>'
+            +'<td style="font-weight:600;">'+fmtDate(a.date)+'</td>'
+            +'<td>'+fmtTime(a.time)+'</td>'
+            +'<td>'+esc(a.specialty)+'</td>'
+            +'<td>'+esc(a.doctor)+(a.location?'<div style="font-size:.75rem;color:var(--color-text-secondary);">'+esc(a.location)+'</div>':'')+'</td>'
+            +'<td><span class="badge '+statusClass(a.status)+'">'+(STATUS_LABEL[a.status]||a.status)+'</span></td>'
+            +'<td class="td-notes">'+(esc(a.notes)||'—')+'</td></tr>';
+    }).join('');
+}
+function renderExames() {
+    var exams=DATA[currentPatient].exams||[];
+    var tbody=document.getElementById('examesBody');
+    if (!exams.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">🧪</span>Nenhum exame cadastrado</td></tr>';return;}
+    tbody.innerHTML=exams.map(function(e){
+        return '<tr><td style="font-weight:600;">'+esc(e.name)+'</td>'
+            +'<td>'+fmtDate(e.requestDate)+'</td><td>'+fmtDate(e.completionDate)+'</td>'
+            +'<td><span class="badge '+statusClass(e.status)+'">'+(STATUS_LABEL[e.status]||e.status)+'</span></td>'
+            +'<td>'+(esc(e.doctor)||'—')+'</td><td class="td-notes">'+(esc(e.result)||'—')+'</td></tr>';
+    }).join('');
+}
+function buildAlerts() {
+    var alerts=[];
+    var today=new Date(); today.setHours(0,0,0,0);
+    var in7=new Date(today); in7.setDate(in7.getDate()+7);
+    ['cristiane','aparecida','darci'].forEach(function(pid){
+        var pdata=DATA[pid], meta=PATIENTS_META[pid];
+        (pdata.appointments||[]).forEach(function(a){
+            if (a.status==='a_agendar'){
+                var mesAno=a.date?a.date.slice(5,7)+'/'+a.date.slice(0,4):'';
+                alerts.push({pid:pid,meta:meta,type:'warning',icon:'📅',
+                    msg:a.specialty+' — '+a.doctor+': agendar para '+mesAno,
+                    detail:a.notes||'Confirmar data com o consultório'});
+                return;
+            }
+            if (a.status!=='agendada') return;
+            var p=a.date.split('-').map(Number);
+            var d=new Date(p[0],p[1]-1,p[2]);
+            if (d>=today && d<=in7){
+                var diff=Math.round((d-today)/86400000);
+                var when=diff===0?'hoje':diff===1?'amanhã':'em '+diff+' dias';
+                alerts.push({pid:pid,meta:meta,type:diff<=1?'urgent':'warning',icon:'🩺',
+                    msg:'Consulta de '+a.specialty+' '+when,
+                    detail:fmtDate(a.date)+' às '+fmtTime(a.time)+' — '+a.doctor});
+            }
+        });
+        (pdata.medications||[]).forEach(function(m){
+            if (m.status==='verificar')
+                alerts.push({pid:pid,meta:meta,type:'warning',icon:'💊',
+                    msg:'Medicamento a verificar: '+m.name,detail:m.observation||m.dose});
+        });
+        (pdata.exams||[]).forEach(function(e){
+            if (e.status==='vencido')
+                alerts.push({pid:pid,meta:meta,type:'urgent',icon:'🧪',
+                    msg:'Exame vencido: '+e.name,detail:e.doctor?'Solicitado por '+e.doctor:''});
+        });
+    });
+    return alerts;
+}
+function renderAlertsBar() {
+    var alerts=buildAlerts();
+    var bar=document.getElementById('alertsBar'), chips=document.getElementById('alertsChips');
+    if (!alerts.length){bar.classList.remove('visible');return;}
+    bar.classList.add('visible');
+    chips.innerHTML=alerts.map(function(a){
+        return '<span class="ab-chip '+(a.type==='urgent'?'urgent':'')+'">'+a.icon+' <strong>'+esc(a.meta.name)+'</strong> — '+esc(a.msg)+'</span>';
+    }).join('');
+}
+function renderPendencias() {
+    var alerts=buildAlerts(), grid=document.getElementById('alertsGrid');
+    if (!alerts.length){
+        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--color-text-secondary);">'
+            +'<div style="font-size:2.5rem;margin-bottom:12px;">✅</div>'
+            +'<div style="font-size:1rem;font-weight:600;">Tudo em ordem!</div>'
+            +'<div style="font-size:.85rem;margin-top:4px;">Nenhuma pendência para os três pacientes.</div></div>';
+        return;
+    }
+    grid.innerHTML=alerts.map(function(a){
+        return '<div class="alert-card '+a.type+'">'
+            +'<div class="alert-patient-tag" style="color:'+a.meta.colorDark+';">'+a.meta.emoji+' '+esc(a.meta.name)+'</div>'
+            +'<div class="alert-msg">'+a.icon+' '+esc(a.msg)+'</div>'
+            +(a.detail?'<div class="alert-detail">'+esc(a.detail)+'</div>':'')
+            +'</div>';
+    }).join('');
+}
+document.addEventListener('DOMContentLoaded', function(){
+    var now=new Date();
+    var dias=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    var meses=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    document.getElementById('headerDate').textContent=
+        dias[now.getDay()]+', '+now.getDate()+' '+meses[now.getMonth()]+' '+now.getFullYear();
+    document.getElementById('updatedStamp').textContent='🗓️ Dados atualizados em: '+ULTIMA_ATUALIZACAO;
+    selectPatient('cristiane');
+    renderSection();
+});
+</script>
+</body>
+</html>
