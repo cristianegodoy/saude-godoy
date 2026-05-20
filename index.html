@@ -140,7 +140,7 @@
     </div>
     <div id="section-exames" class="section">
         <div class="section-header"><span class="section-title">🧪 Exames</span></div>
-        <div class="table-wrap"><table><thead><tr><th>Exame</th><th>Solicitado em</th><th>Realizado em</th><th>Status</th><th>Médico Solicitante</th><th>Resultado</th></tr></thead><tbody id="examesBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Exame</th><th>Solicitado em</th><th>Data / Agendado</th><th>Status</th><th>Médico Solicitante</th><th>Resultado / Preparo</th></tr></thead><tbody id="examesBody"></tbody></table></div>
     </div>
     <div id="section-pendencias" class="section">
         <div class="section-header">
@@ -172,7 +172,11 @@ var DATA = {
             {date:'2026-06-13', time:'10:00', specialty:'Endocrinologista', doctor:'Dra. Eliana', location:'',            status:'agendada',  notes:''},
             {date:'2026-11-01', time:'',      specialty:'Odontologista',    doctor:'Dr. Duílio',  location:'',            status:'a_agendar', notes:'Limpeza dental — aguardando confirmação de data'}
         ],
-        exams: []
+        exams: [
+            {name:'Mamografia',             requestDate:'', completionDate:'2026-06-09', time:'14:10', status:'agendada', doctor:'', result:'Não passar talco, creme, óleo e desodorante nas mamas e axilas · Trazer exames anteriores, pedido médico e carteirinha do convênio'},
+            {name:'Ultrassom de Mamas',     requestDate:'', completionDate:'2026-06-09', time:'14:10', status:'agendada', doctor:'', result:'Não passar talco, creme, óleo e desodorante nas mamas e axilas · Trazer exames anteriores, pedido médico e carteirinha do convênio'},
+            {name:'Ultrassom Transvaginal', requestDate:'', completionDate:'2026-06-09', time:'',      status:'agendada', doctor:'', result:'Sem preparo especial'}
+        ]
     },
     aparecida: {
         medications: [
@@ -184,9 +188,13 @@ var DATA = {
             {name:'Colesterol',   dose:'—',     time:'manhajejum', status:'verificar', observation:'Colesterol alto — não está tomando medicamento. Verificar com cardiologista'}
         ],
         appointments: [
-            {date:'2026-06-13', time:'10:30', specialty:'Endocrinologista', doctor:'Dra. Eliana', location:'', status:'agendada', notes:''}
+            {date:'2026-06-13', time:'10:30', specialty:'Endocrinologista', doctor:'Dra. Eliana',   location:'', status:'agendada', notes:''},
+            {date:'2026-07-02', time:'14:00', specialty:'Cardiologista',    doctor:'Dr. Sebastião', location:'', status:'agendada', notes:''}
         ],
-        exams: []
+        exams: [
+            {name:'Teste de Esforço (Stress)', requestDate:'', completionDate:'2026-06-01', time:'09:00', status:'agendada', doctor:'', result:''},
+            {name:'Mapa + Holter',             requestDate:'', completionDate:'2026-06-08', time:'10:15', status:'agendada', doctor:'', result:''}
+        ]
     },
     darci: {medications:[], appointments:[], exams:[]}
 };
@@ -286,7 +294,7 @@ function renderExames() {
     if (!exams.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">🧪</span>Nenhum exame cadastrado</td></tr>';return;}
     tbody.innerHTML=exams.map(function(e){
         return '<tr><td style="font-weight:600;">'+esc(e.name)+'</td>'
-            +'<td>'+fmtDate(e.requestDate)+'</td><td>'+fmtDate(e.completionDate)+'</td>'
+            +'<td>'+fmtDate(e.requestDate)+'</td><td>'+fmtDate(e.completionDate)+(e.time?' às '+e.time:'')+'</td>'
             +'<td><span class="badge '+statusClass(e.status)+'">'+(STATUS_LABEL[e.status]||e.status)+'</span></td>'
             +'<td>'+(esc(e.doctor)||'—')+'</td><td class="td-notes">'+(esc(e.result)||'—')+'</td></tr>';
     }).join('');
