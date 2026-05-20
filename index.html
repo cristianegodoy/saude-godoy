@@ -214,7 +214,8 @@ var STATUS_LABEL = {
     pendente:'Pendente', realizado:'Realizado', vencido:'Vencido'
 };
 function statusClass(s) {
-    if (['ativo','agendada','realizado','realizada'].indexOf(s)>=0) return 'badge-green';
+    if (['ativo','realizado','realizada'].indexOf(s)>=0) return 'badge-green';
+    if (s==='agendada') return 'badge-red';
     if (s==='a_agendar') return 'badge-yellow';
     if (['pausado','pendente'].indexOf(s)>=0) return 'badge-orange';
     return 'badge-red';
