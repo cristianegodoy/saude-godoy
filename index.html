@@ -152,7 +152,7 @@
     </div>
 </div>
 <script>
-var ULTIMA_ATUALIZACAO = '19/05/2026';
+var ULTIMA_ATUALIZACAO = '31/05/2026';
 var DATA = {
     cristiane: {
         medications: [
@@ -168,8 +168,8 @@ var DATA = {
         ],
         appointments: [
             {date:'2026-05-13', time:'15:40', specialty:'Cardiologista',    doctor:'Dr. Matheus', location:'Pro Coração', status:'realizada', notes:''},
-            {date:'2026-05-20', time:'14:30', specialty:'Cardiologista',    doctor:'Dr. Matheus', location:'Pro Coração', status:'agendada',  notes:''},
-            {date:'2026-05-25', time:'15:30', specialty:'Odontologista',    doctor:'Dr. Duílio',  location:'',            status:'agendada',  notes:'Limpeza dental'},
+            {date:'2026-06-01', time:'15:30', specialty:'Odontologista',    doctor:'Dr. Duílio',  location:'',            status:'realizada', notes:'Limpeza dental'},
+            {date:'2026-06-10', time:'14:30', specialty:'Cardiologista',    doctor:'Dr. Matheus', location:'Pro Coração', status:'agendada',  notes:''},
             {date:'2026-06-13', time:'10:00', specialty:'Endocrinologista', doctor:'Dra. Eliana', location:'',            status:'agendada',  notes:''},
             {date:'2026-11-01', time:'',      specialty:'Odontologista',    doctor:'Dr. Duílio',  location:'',            status:'a_agendar', notes:'Limpeza dental — aguardando confirmação de data'}
         ],
@@ -180,10 +180,10 @@ var DATA = {
     },
     aparecida: {
         medications: [
-            {name:'Forxiga',      dose:'10mg',  time:'manhajejum', status:'ativo',    observation:'Diabetes'},
-            {name:'Losartana',    dose:'50mg',  time:'manhajejum', status:'ativo',    observation:'Pressão arterial'},
-            {name:'Clorotiazida', dose:'25mg',  time:'manhajejum', status:'ativo',    observation:'Pressão arterial'},
-            {name:'Losartana',    dose:'50mg',  time:'noite',      status:'ativo',    observation:'Pressão arterial'},
+            {name:'Forxiga',      dose:'10mg',  time:'manhajejum', status:'ativo',     observation:'Diabetes'},
+            {name:'Losartana',    dose:'50mg',  time:'manhajejum', status:'ativo',     observation:'Pressão arterial'},
+            {name:'Clorotiazida', dose:'25mg',  time:'manhajejum', status:'ativo',     observation:'Pressão arterial'},
+            {name:'Losartana',    dose:'50mg',  time:'noite',      status:'ativo',     observation:'Pressão arterial'},
             {name:'Tireoide',     dose:'—',     time:'manhajejum', status:'verificar', observation:'Verificar condições da tireoide com Dra. Eliana (endocrinologista)'},
             {name:'Colesterol',   dose:'—',     time:'manhajejum', status:'verificar', observation:'Colesterol alto — não está tomando medicamento. Verificar com cardiologista'}
         ],
@@ -218,7 +218,7 @@ function statusClass(s) {
     if (['ativo','realizado','realizada'].indexOf(s)>=0) return 'badge-green';
     if (s==='agendada') return 'badge-red';
     if (s==='a_agendar') return 'badge-yellow';
-    if (['pausado','pendente'].indexOf(s)>=0) return 'badge-orange';
+    if (['pausado','pendente','verificar'].indexOf(s)>=0) return 'badge-orange';
     return 'badge-red';
 }
 var currentPatient='cristiane', currentSection='medicamentos';
