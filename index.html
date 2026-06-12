@@ -66,6 +66,8 @@
         .badge-yellow { background:#fef9c3; color:#92400e; }
         .badge-orange { background:var(--color-orange-bg); color:var(--color-orange); }
         .badge-red    { background:var(--color-red-bg);    color:var(--color-red);    }
+        .badge-grey   { background:#f0eeec; color:#9a9590; }
+        .cancelled-row td { text-decoration:line-through; opacity:0.45; }
         .med-groups { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; }
         .med-group { background:#FAF7F3; border-radius:var(--radius); box-shadow:var(--shadow-sm); border:1px solid var(--color-border); overflow:hidden; }
         .med-group-header { background:var(--patient-color); padding:11px 16px; display:flex; align-items:center; justify-content:space-between; }
@@ -179,7 +181,7 @@ var DATA = {
         ],
         exams: [
             {name:'Mamografia + Ultrassom de Mamas', requestDate:'', completionDate:'2026-06-22', time:'16:10', status:'agendada', doctor:'RCC', result:'Não passar talco, creme, óleo e desodorante nas mamas e axilas · Trazer exames anteriores, pedido médico e carteirinha do convênio'},
-            {name:'Ultrassom Transvaginal',          requestDate:'', completionDate:'2026-06-09', time:'',      status:'agendada', doctor:'', result:'Sem preparo especial'}
+            {name:'Ultrassom Transvaginal',          requestDate:'', completionDate:'2026-06-09', time:'',      status:'cancelada', doctor:'', result:'Sem preparo especial'}
         ]
     },
     aparecida: {
@@ -223,6 +225,7 @@ function statusClass(s) {
     if (s==='agendada') return 'badge-red';
     if (s==='a_agendar') return 'badge-yellow';
     if (['pausado','pendente','verificar'].indexOf(s)>=0) return 'badge-orange';
+    if (s==='cancelada') return 'badge-grey';
     return 'badge-red';
 }
 var currentPatient='cristiane', currentSection='medicamentos';
@@ -284,7 +287,7 @@ function renderConsultas() {
     if (!appts.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">📅</span>Nenhuma consulta cadastrada</td></tr>';return;}
     var sorted=appts.slice().sort(function(a,b){return a.date>b.date?1:-1;});
     tbody.innerHTML=sorted.map(function(a){
-        return '<tr>'
+        return '<tr'+(a.status==='cancelada'?' class="cancelled-row"':'')+'>'
             +'<td style="font-weight:600;">'+fmtDate(a.date)+'</td>'
             +'<td>'+fmtTime(a.time)+'</td>'
             +'<td>'+esc(a.specialty)+'</td>'
@@ -298,7 +301,7 @@ function renderExames() {
     var tbody=document.getElementById('examesBody');
     if (!exams.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6"><span class="empty-icon">🧪</span>Nenhum exame cadastrado</td></tr>';return;}
     tbody.innerHTML=exams.map(function(e){
-        return '<tr><td style="font-weight:600;">'+esc(e.name)+'</td>'
+        return '<tr'+(e.status==='cancelada'?' class="cancelled-row"':'')+'><td style="font-weight:600;">'+esc(e.name)+'</td>'
             +'<td>'+fmtDate(e.requestDate)+'</td><td>'+fmtDate(e.completionDate)+(e.time?' às '+e.time:'')+'</td>'
             +'<td><span class="badge '+statusClass(e.status)+'">'+(STATUS_LABEL[e.status]||e.status)+'</span></td>'
             +'<td>'+(esc(e.doctor)||'—')+'</td><td class="td-notes">'+(esc(e.result)||'—')+'</td></tr>';
